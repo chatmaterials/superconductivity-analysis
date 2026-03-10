@@ -21,12 +21,21 @@ def allen_dynes_tc(lambda_ep: float, omega_log_K: float, mu_star: float) -> floa
 def analyze(alpha2f_path: Path, mu_star: float) -> dict[str, object]:
     epc = analyze_alpha2f(alpha2f_path)
     tc = allen_dynes_tc(epc["lambda_ep"], epc["omega_log_K"], mu_star)
+    if tc >= 20.0:
+        tc_class = "high-Tc-like"
+    elif tc >= 5.0:
+        tc_class = "moderate-Tc-like"
+    elif tc > 0.0:
+        tc_class = "low-Tc-like"
+    else:
+        tc_class = "non-superconducting-like"
     return {
         "path": str(alpha2f_path),
         "lambda_ep": epc["lambda_ep"],
         "omega_log_K": epc["omega_log_K"],
         "mu_star": mu_star,
         "tc_K": tc,
+        "tc_class": tc_class,
         "observations": ["Allen-Dynes Tc estimate computed from lambda, omega_log, and mu*."],
     }
 

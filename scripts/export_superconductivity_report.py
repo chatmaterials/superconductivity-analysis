@@ -10,18 +10,31 @@ from analyze_phonon_modes import analyze as analyze_phonons
 from estimate_tc import analyze as analyze_tc
 
 
+def screening_note(epc: dict[str, object], phonons: dict[str, object] | None, tc: dict[str, object]) -> str:
+    if phonons is not None and phonons["imaginary_mode_count"] > 0:
+        return "The coupling may look promising, but imaginary phonon modes indicate a structural instability that undercuts simple superconductivity screening."
+    if tc["tc_K"] >= 5.0 and (phonons is None or phonons["stability_class"] != "unstable"):
+        return f"This case combines `{epc['coupling_regime']}` electron-phonon coupling with a `{tc['tc_class']}` Allen-Dynes estimate."
+    if phonons is not None and phonons["stability_class"] == "softened":
+        return "The sampled phonon spectrum is softened rather than fully unstable; this may enhance coupling, but the system still needs careful stability checks."
+    return "This case looks weak-to-moderate in compact EPC screening and may need stronger coupling or a higher characteristic frequency to become competitive."
+
+
 def render_markdown(epc: dict[str, object], phonons: dict[str, object] | None, tc: dict[str, object]) -> str:
     lines = [
         "# Superconductivity Analysis Report",
         "",
         "## Electron-Phonon Coupling",
         f"- Lambda: `{epc['lambda_ep']:.4f}`",
+        f"- Coupling regime: `{epc['coupling_regime']}`",
+        f"- Low-frequency lambda fraction: `{epc['low_frequency_lambda_fraction']:.4f}`",
         f"- Omega_log (meV): `{epc['omega_log_meV']:.4f}`",
         f"- Omega_log (K): `{epc['omega_log_K']:.4f}`",
         "",
         "## Tc Estimate",
         f"- mu*: `{tc['mu_star']:.3f}`",
         f"- Tc (K): `{tc['tc_K']:.4f}`",
+        f"- Tc class: `{tc['tc_class']}`",
     ]
     if phonons is not None:
         lines.extend(
@@ -29,10 +42,12 @@ def render_markdown(epc: dict[str, object], phonons: dict[str, object] | None, t
                 "",
                 "## Phonon Stability",
                 f"- Minimum frequency: `{phonons['min_frequency']:.4f}`",
+                f"- Stability class: `{phonons['stability_class']}`",
                 f"- Imaginary mode count: `{phonons['imaginary_mode_count']}`",
                 f"- Soft mode count: `{phonons['soft_mode_count']}`",
             ]
         )
+    lines.extend(["", "## Screening Note", f"- {screening_note(epc, phonons, tc)}"])
     return "\n".join(lines).rstrip() + "\n"
 
 

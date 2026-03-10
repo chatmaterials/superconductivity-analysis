@@ -13,11 +13,20 @@ def analyze(path: Path, soft_threshold: float = 1.0) -> dict[str, object]:
         raise SystemExit("Phonon-mode file contains no frequencies")
     imaginary = [freq for freq in freqs if freq < 0]
     soft = [freq for freq in freqs if 0 <= freq < soft_threshold]
+    if imaginary:
+        stability = "unstable"
+    elif soft:
+        stability = "softened"
+    else:
+        stability = "stable"
     return {
         "path": str(path),
         "min_frequency": min(freqs),
+        "max_frequency": max(freqs),
         "imaginary_mode_count": len(imaginary),
         "soft_mode_count": len(soft),
+        "stability_class": stability,
+        "soft_mode_fraction": (len(soft) + len(imaginary)) / len(freqs),
         "observations": ["Phonon-mode stability summary extracted from the sampled frequencies."],
     }
 

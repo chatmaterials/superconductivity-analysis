@@ -1,6 +1,6 @@
 ---
 name: "superconductivity-analysis"
-description: "Use when the task is to analyze superconductivity-relevant quantities from DFT or Eliashberg-style outputs, including electron-phonon coupling summaries, logarithmic phonon frequency estimates, soft-mode checks, Allen-Dynes Tc estimates, and compact markdown reports from finished calculations."
+description: "Use when the task is to analyze superconductivity-relevant quantities from DFT or Eliashberg-style outputs, including electron-phonon coupling summaries, logarithmic phonon frequency estimates, phonon-stability checks, Allen-Dynes Tc estimates, candidate ranking, and compact markdown reports from finished calculations."
 ---
 
 # Superconductivity Analysis
@@ -13,6 +13,7 @@ Use this skill for superconductivity-oriented post-processing rather than generi
 - estimate `lambda` and `omega_log`
 - check whether a phonon mode set contains soft or imaginary modes
 - estimate a simple Allen-Dynes `Tc`
+- rank multiple superconducting candidates with a compact Tc-plus-stability heuristic
 - write a compact superconductivity-analysis report from existing data
 
 ## Use the bundled helpers
@@ -23,6 +24,8 @@ Use this skill for superconductivity-oriented post-processing rather than generi
   Summarize phonon-mode stability and soft-mode counts.
 - `scripts/estimate_tc.py`
   Estimate `Tc` from `lambda`, `omega_log`, and `mu*`.
+- `scripts/compare_superconducting_candidates.py`
+  Rank multiple superconducting candidates with a compact Tc-plus-stability heuristic.
 - `scripts/export_superconductivity_report.py`
   Export a markdown superconductivity-analysis report.
 
