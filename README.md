@@ -1,5 +1,7 @@
 # superconductivity-analysis
 
+[![CI](https://img.shields.io/github/actions/workflow/status/chatmaterials/superconductivity-analysis/ci.yml?branch=main&label=CI)](https://github.com/chatmaterials/superconductivity-analysis/actions/workflows/ci.yml) [![Release](https://img.shields.io/github/v/release/chatmaterials/superconductivity-analysis?display_name=tag)](https://github.com/chatmaterials/superconductivity-analysis/releases)
+
 Standalone skill for superconductivity-relevant DFT result analysis.
 
 ## Install
