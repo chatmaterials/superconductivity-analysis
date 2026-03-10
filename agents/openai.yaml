@@ -1,0 +1,5 @@
+interface:
+  display_name: "Superconductivity Analysis"
+  short_description: "Analyze EPC, phonons, and Tc trends"
+  brand_color: "#0EA5E9"
+  default_prompt: "Use $superconductivity-analysis to analyze electron-phonon coupling, phonon softening, or Tc trends from DFT-derived data."
