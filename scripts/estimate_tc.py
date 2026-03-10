@@ -36,6 +36,7 @@ def analyze(alpha2f_path: Path, mu_star: float) -> dict[str, object]:
         "mu_star": mu_star,
         "tc_K": tc,
         "tc_class": tc_class,
+        "screening_tc_K": tc,
         "observations": ["Allen-Dynes Tc estimate computed from lambda, omega_log, and mu*."],
     }
 

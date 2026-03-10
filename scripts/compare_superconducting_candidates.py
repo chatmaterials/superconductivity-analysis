@@ -8,6 +8,7 @@ from pathlib import Path
 
 from analyze_alpha2f import analyze as analyze_alpha2f
 from analyze_phonon_modes import analyze as analyze_phonons
+from analyze_tc_sensitivity import analyze as analyze_tc_sensitivity
 from estimate_tc import analyze as analyze_tc
 
 
@@ -25,10 +26,17 @@ def analyze_case(root: Path, mu_star: float, target_tc: float) -> dict[str, obje
     epc = analyze_alpha2f(alpha2f_path)
     phonons = analyze_phonons(phonon_path)
     tc = analyze_tc(alpha2f_path, mu_star)
+    sensitivity = analyze_tc_sensitivity(alpha2f_path, 0.08, 0.15, 0.01)
     tc_penalty = max(0.0, target_tc - float(tc["tc_K"]))
     instability_penalty = 20.0 if phonons["imaginary_mode_count"] > 0 else 0.0
     softness_penalty = 2.0 if phonons["stability_class"] == "softened" else 0.0
-    score = tc_penalty + instability_penalty + softness_penalty
+    robustness_penalty = max(0.0, 1.0 - float(sensitivity["tc_min_K"]))
+    screening_tc = float(tc["tc_K"])
+    if phonons["stability_class"] == "softened":
+        screening_tc *= 0.85
+    elif phonons["stability_class"] == "unstable":
+        screening_tc = 0.0
+    score = tc_penalty + instability_penalty + softness_penalty + robustness_penalty
     return {
         "case": root.name,
         "path": str(root),
@@ -36,13 +44,18 @@ def analyze_case(root: Path, mu_star: float, target_tc: float) -> dict[str, obje
         "coupling_regime": epc["coupling_regime"],
         "omega_log_K": epc["omega_log_K"],
         "tc_K": tc["tc_K"],
+        "screening_tc_K": screening_tc,
         "tc_class": tc["tc_class"],
+        "tc_min_K": sensitivity["tc_min_K"],
+        "tc_max_K": sensitivity["tc_max_K"],
+        "tc_robustness_class": sensitivity["robustness_class"],
         "stability_class": phonons["stability_class"],
         "imaginary_mode_count": phonons["imaginary_mode_count"],
         "soft_mode_count": phonons["soft_mode_count"],
         "tc_penalty": tc_penalty,
         "instability_penalty": instability_penalty,
         "softness_penalty": softness_penalty,
+        "robustness_penalty": robustness_penalty,
         "screening_score": score,
     }
 
@@ -53,7 +66,7 @@ def analyze_cases(roots: list[Path], mu_star: float, target_tc: float) -> dict[s
     return {
         "mu_star": mu_star,
         "target_tc_K": target_tc,
-        "ranking_basis": "screening_score = tc_penalty + instability_penalty + softness_penalty",
+        "ranking_basis": "screening_score = tc_penalty + instability_penalty + softness_penalty + robustness_penalty",
         "cases": ranked,
         "best_case": ranked[0]["case"] if ranked else None,
         "observations": [

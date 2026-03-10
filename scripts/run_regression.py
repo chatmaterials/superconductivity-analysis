@@ -36,9 +36,12 @@ def main() -> None:
     tc = run_json("scripts/estimate_tc.py", "--alpha2f-path", "fixtures/alpha2f/alpha2f.dat", "--mu-star", "0.10", "--json")
     ensure(tc["tc_K"] > 0, "superconductivity-analysis should estimate a positive Tc")
     ensure(tc["tc_class"] == "low-Tc-like", "superconductivity-analysis should classify the reference Tc scale")
+    sensitivity = run_json("scripts/analyze_tc_sensitivity.py", "--alpha2f-path", "fixtures/alpha2f/alpha2f.dat", "--json")
+    ensure(sensitivity["robustness_class"] == "fragile", "superconductivity-analysis should classify the reference Tc as mu*-fragile")
     ranked = run_json(
         "scripts/compare_superconducting_candidates.py",
         "fixtures",
+        "fixtures/candidates/stable-strong",
         "fixtures/candidates/unstable-strong",
         "--mu-star",
         "0.10",
@@ -46,7 +49,7 @@ def main() -> None:
         "0.5",
         "--json",
     )
-    ensure(ranked["best_case"] == "fixtures", "superconductivity-analysis should rank the softened but stable fixture ahead of the unstable candidate")
+    ensure(ranked["best_case"] == "stable-strong", "superconductivity-analysis should rank the strong and stable candidate ahead of the weaker or unstable cases")
     temp_dir = Path(tempfile.mkdtemp(prefix="superconductivity-analysis-report-"))
     try:
         report_path = Path(
@@ -65,6 +68,7 @@ def main() -> None:
         report_text = report_path.read_text()
         ensure("# Superconductivity Analysis Report" in report_text, "superconductivity report should have a heading")
         ensure("## Electron-Phonon Coupling" in report_text and "## Tc Estimate" in report_text, "superconductivity report should include EPC and Tc sections")
+        ensure("## Tc Robustness" in report_text, "superconductivity report should include Tc robustness")
         ensure("## Screening Note" in report_text, "superconductivity report should include a screening note")
     finally:
         shutil.rmtree(temp_dir)

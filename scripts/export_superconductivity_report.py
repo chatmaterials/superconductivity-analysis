@@ -7,6 +7,7 @@ from pathlib import Path
 
 from analyze_alpha2f import analyze as analyze_alpha2f
 from analyze_phonon_modes import analyze as analyze_phonons
+from analyze_tc_sensitivity import analyze as analyze_tc_sensitivity
 from estimate_tc import analyze as analyze_tc
 
 
@@ -20,7 +21,7 @@ def screening_note(epc: dict[str, object], phonons: dict[str, object] | None, tc
     return "This case looks weak-to-moderate in compact EPC screening and may need stronger coupling or a higher characteristic frequency to become competitive."
 
 
-def render_markdown(epc: dict[str, object], phonons: dict[str, object] | None, tc: dict[str, object]) -> str:
+def render_markdown(epc: dict[str, object], phonons: dict[str, object] | None, tc: dict[str, object], sensitivity: dict[str, object]) -> str:
     lines = [
         "# Superconductivity Analysis Report",
         "",
@@ -35,6 +36,12 @@ def render_markdown(epc: dict[str, object], phonons: dict[str, object] | None, t
         f"- mu*: `{tc['mu_star']:.3f}`",
         f"- Tc (K): `{tc['tc_K']:.4f}`",
         f"- Tc class: `{tc['tc_class']}`",
+        "",
+        "## Tc Robustness",
+        f"- Tc min over mu* window (K): `{sensitivity['tc_min_K']:.4f}`",
+        f"- Tc max over mu* window (K): `{sensitivity['tc_max_K']:.4f}`",
+        f"- Tc spread over mu* window (K): `{sensitivity['tc_spread_K']:.4f}`",
+        f"- Robustness class: `{sensitivity['robustness_class']}`",
     ]
     if phonons is not None:
         lines.extend(
@@ -62,8 +69,9 @@ def main() -> None:
     epc = analyze_alpha2f(alpha2f)
     phonons = analyze_phonons(Path(args.phonon_path).expanduser().resolve()) if args.phonon_path else None
     tc = analyze_tc(alpha2f, args.mu_star)
+    sensitivity = analyze_tc_sensitivity(alpha2f, 0.08, 0.15, 0.01)
     output = Path(args.output).expanduser().resolve() if args.output else Path.cwd() / "SUPERCONDUCTIVITY_REPORT.md"
-    output.write_text(render_markdown(epc, phonons, tc))
+    output.write_text(render_markdown(epc, phonons, tc, sensitivity))
     print(output)
 
 
