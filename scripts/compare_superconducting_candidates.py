@@ -20,7 +20,7 @@ def locate_required(root: Path, relative_paths: list[str]) -> Path:
     raise SystemExit(f"Could not locate any of {relative_paths} in {root}")
 
 
-def analyze_case(root: Path, mu_star: float, target_tc: float) -> dict[str, object]:
+def analyze_case(root: Path, mu_star: float, target_tc: float, mode: str) -> dict[str, object]:
     alpha2f_path = locate_required(root, ["alpha2f.dat", "alpha2f/alpha2f.dat"])
     phonon_path = locate_required(root, ["phonon_modes.dat", "phonon/phonon_modes.dat"])
     epc = analyze_alpha2f(alpha2f_path)
@@ -36,7 +36,14 @@ def analyze_case(root: Path, mu_star: float, target_tc: float) -> dict[str, obje
         screening_tc *= 0.85
     elif phonons["stability_class"] == "unstable":
         screening_tc = 0.0
-    score = tc_penalty + instability_penalty + softness_penalty + robustness_penalty
+    if mode == "high-tc":
+        score = -0.1 * screening_tc + 0.5 * instability_penalty + 0.1 * softness_penalty + 0.1 * robustness_penalty
+    elif mode == "robust":
+        score = 1.0 * tc_penalty + 1.5 * instability_penalty + 1.0 * softness_penalty + 1.5 * robustness_penalty
+    elif mode == "stable":
+        score = 0.5 * tc_penalty + 2.0 * instability_penalty + 1.5 * softness_penalty + 0.5 * robustness_penalty
+    else:
+        score = tc_penalty + instability_penalty + softness_penalty + robustness_penalty
     return {
         "case": root.name,
         "path": str(root),
@@ -60,13 +67,14 @@ def analyze_case(root: Path, mu_star: float, target_tc: float) -> dict[str, obje
     }
 
 
-def analyze_cases(roots: list[Path], mu_star: float, target_tc: float) -> dict[str, object]:
-    cases = [analyze_case(root, mu_star, target_tc) for root in roots]
+def analyze_cases(roots: list[Path], mu_star: float, target_tc: float, mode: str) -> dict[str, object]:
+    cases = [analyze_case(root, mu_star, target_tc, mode) for root in roots]
     ranked = sorted(cases, key=lambda item: item["screening_score"])
     return {
         "mu_star": mu_star,
         "target_tc_K": target_tc,
-        "ranking_basis": "screening_score = tc_penalty + instability_penalty + softness_penalty + robustness_penalty",
+        "mode": mode,
+        "ranking_basis": "screening_score = weighted(tc_penalty, instability_penalty, softness_penalty, robustness_penalty)",
         "cases": ranked,
         "best_case": ranked[0]["case"] if ranked else None,
         "observations": [
@@ -80,9 +88,10 @@ def main() -> None:
     parser.add_argument("paths", nargs="+")
     parser.add_argument("--mu-star", type=float, default=0.10)
     parser.add_argument("--target-tc", type=float, default=1.0)
+    parser.add_argument("--mode", choices=["balanced", "high-tc", "robust", "stable"], default="balanced")
     parser.add_argument("--json", action="store_true")
     args = parser.parse_args()
-    payload = analyze_cases([Path(path).expanduser().resolve() for path in args.paths], args.mu_star, args.target_tc)
+    payload = analyze_cases([Path(path).expanduser().resolve() for path in args.paths], args.mu_star, args.target_tc, args.mode)
     if args.json:
         print(json.dumps(payload, indent=2))
         return

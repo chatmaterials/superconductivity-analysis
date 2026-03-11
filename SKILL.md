@@ -1,6 +1,6 @@
 ---
 name: "superconductivity-analysis"
-description: "Use when the task is to analyze superconductivity-relevant quantities from DFT or Eliashberg-style outputs, including electron-phonon coupling summaries, logarithmic phonon frequency estimates, phonon-stability checks, Allen-Dynes Tc estimates, mu*-sensitivity or Tc robustness checks, candidate ranking, and compact markdown reports from finished calculations."
+description: "Use when the task is to analyze superconductivity-relevant quantities from DFT or Eliashberg-style outputs, including electron-phonon coupling summaries, logarithmic phonon frequency estimates, phonon-stability checks, Allen-Dynes Tc estimates, mu*-sensitivity or Tc robustness checks, mode-specific candidate ranking, and compact markdown reports from finished calculations."
 ---
 
 # Superconductivity Analysis
@@ -14,7 +14,7 @@ Use this skill for superconductivity-oriented post-processing rather than generi
 - check whether a phonon mode set contains soft or imaginary modes
 - estimate a simple Allen-Dynes `Tc`
 - estimate how sensitive Tc is to the chosen `mu*`
-- rank multiple superconducting candidates with a compact Tc-plus-stability heuristic
+- rank multiple superconducting candidates in balanced, high-Tc, robust, or stable modes
 - write a compact superconductivity-analysis report from existing data
 
 ## Use the bundled helpers

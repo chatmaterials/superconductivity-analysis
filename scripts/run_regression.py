@@ -41,15 +41,46 @@ def main() -> None:
     ranked = run_json(
         "scripts/compare_superconducting_candidates.py",
         "fixtures",
+        "fixtures/candidates/soft-high",
         "fixtures/candidates/stable-strong",
         "fixtures/candidates/unstable-strong",
         "--mu-star",
         "0.10",
         "--target-tc",
         "0.5",
+        "--mode",
+        "balanced",
         "--json",
     )
     ensure(ranked["best_case"] == "stable-strong", "superconductivity-analysis should rank the strong and stable candidate ahead of the weaker or unstable cases")
+    high_tc_ranked = run_json(
+        "scripts/compare_superconducting_candidates.py",
+        "fixtures",
+        "fixtures/candidates/soft-high",
+        "fixtures/candidates/stable-strong",
+        "--mu-star",
+        "0.10",
+        "--target-tc",
+        "0.5",
+        "--mode",
+        "high-tc",
+        "--json",
+    )
+    ensure(high_tc_ranked["best_case"] == "soft-high", "superconductivity-analysis should rank the higher-Tc softened candidate first in high-tc mode")
+    robust_ranked = run_json(
+        "scripts/compare_superconducting_candidates.py",
+        "fixtures",
+        "fixtures/candidates/soft-high",
+        "fixtures/candidates/stable-strong",
+        "--mu-star",
+        "0.10",
+        "--target-tc",
+        "0.5",
+        "--mode",
+        "robust",
+        "--json",
+    )
+    ensure(robust_ranked["best_case"] == "stable-strong", "superconductivity-analysis should rank the robust stable candidate first in robust mode")
     temp_dir = Path(tempfile.mkdtemp(prefix="superconductivity-analysis-report-"))
     try:
         report_path = Path(
